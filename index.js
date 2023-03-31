@@ -1,8 +1,6 @@
 const exp = require("express");
 const app = exp();
 
-
-
 const ejs = require("ejs");
 app.set("view engine","ejs");
 
@@ -22,7 +20,7 @@ app.get("/about",function(req,res){
 
 app.get("/statistics",function(req,res){
     res.render("statistics");
-})
+});
 
 app.get("/company1",function(req,res){
     res.render("company1");
@@ -60,7 +58,63 @@ app.get("/company9",function(req,res){
     res.render("company9");
 });
 
-app.listen(8001, function(){
+app.listen(8000, function(){
     console.log("server started on port 8000");
 });
+
+
+
+var express = require("express")
+var bodyParser = require("body-parser")
+var mongoose = require("mongoose")
+
+//const app = express()
+
+app.use(bodyParser.json())
+app.use(express.static('public'))
+app.use(bodyParser.urlencoded({
+    extended: true
+}))
+
+mongoose.connect('mongodb://0.0.0.0:27017/mydb', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+})
+
+var db = mongoose.connection;
+
+db.on('error', () => console.log("Error in Connecting to Database"));
+db.once('open', () => console.log("Connected to Database"));
+
+app.post("/sign_up", (req, res) => {
+    var name = req.body.name;
+    var email = req.body.email;
+    var phno = req.body.phno;
+    var password = req.body.password;
+    var cgpa = req.body.cgpa;
+
+    var data = {
+        "name": name,
+        "email": email,
+        "phno": phno,
+        "password": password,
+        "cgpa":cgpa
+    }
+
+    db.collection('users').insertOne(data, (err, collection) => {
+        if (err) throw err;
+        console.log("Record Inserted Successfully");
+    });
+    return res.redirect("companies");
+
+})
+
+app.get("/", (req, res) => {
+    res.set({
+        "Allow-access-Allow-Origin": '*'
+    })
+    return res.redirect('home.ejs');
+
+}).listen(3000);
+
 
